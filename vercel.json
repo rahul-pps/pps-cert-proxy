@@ -1,6 +1,8 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api/$1" }
+    { "source": "/health",     "destination": "/api/verify?health=1" },
+    { "source": "/cert/:id",   "destination": "/api/verify?cert=:id" },
+    { "source": "/",           "destination": "/api/verify" }
   ]
 }
