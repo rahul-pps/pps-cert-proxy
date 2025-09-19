@@ -5,17 +5,23 @@ const APPS_SCRIPT_BASE = 'https://script.google.com/macros/s/AKfycbym6oYZQSv7I7k
 
 export default async function handler(req) {
   const inUrl = new URL(req.url);
-  const parts = inUrl.pathname.split('/').filter(Boolean); // e.g. ['cert','Cert1'] or [] for root
+
+  // 🔧 Strip the '/api' prefix that exists after Vercel rewrites
+  const pathOnly = inUrl.pathname.replace(/^\/api\b/, '');   // '/cert/Cert1' or '/health' or '/'
+  const parts = pathOnly.split('/').filter(Boolean);         // ['cert','Cert1'] | ['health'] | []
+
   let target = APPS_SCRIPT_BASE;
 
   if (parts.length === 0) {
+    // root → landing
     target = APPS_SCRIPT_BASE;
   } else if (parts.length === 1 && parts[0].toLowerCase() === 'health') {
     target = APPS_SCRIPT_BASE + '?health=1';
   } else if (parts.length === 2 && parts[0].toLowerCase() === 'cert') {
     target = APPS_SCRIPT_BASE + '?cert=' + encodeURIComponent(parts[1]);
   } else {
-    target = APPS_SCRIPT_BASE + inUrl.search; // pass-through queries
+    // passthrough for other cases (keeps query string)
+    target = APPS_SCRIPT_BASE + inUrl.search;
   }
 
   const resp = await fetch(target, { redirect: 'manual' });
